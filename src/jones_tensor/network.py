@@ -34,7 +34,7 @@ def construct_matrices(qs: np.ndarray, batch: bool = True) -> tuple[np.ndarray, 
 
     if not batch:
         As = As[..., 0]
-        S = S[..., 0]
+        M = M[..., 0]
         Rpos = Rpos[..., 0]
         Rneg = Rneg[..., 0]
 
@@ -131,6 +131,9 @@ def evaluate_jones(
     output = net.contract(output_inds=(batch,) if batch is not None else (), optimize=optimize, backend=backend, get=get)
 
     if get is None:
-        return autoray.to_numpy(output.data)
+        if batch is not None:
+            return autoray.to_numpy(output.data)
+        else:
+            return complex(autoray.to_numpy(output))
     else:
         return output
