@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools >= 75.5.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jones-tensor"
+version = "0.0.1"
+description = "Tensor network methods for evaluating the Jones polynomial"
+authors = [{name = "Tuomas Laakkonen", email = "tsrl@mit.edu"}]
+readme = "README.md"
+requires-python = ">= 3.12"
+dependencies = [
+    "autoray>=0.7",
+    "discopy>=1",
+    "numpy>=2",
+    "quimb>=1.8"
+]
