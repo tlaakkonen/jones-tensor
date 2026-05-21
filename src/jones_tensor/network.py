@@ -23,14 +23,14 @@ def construct_matrices(qs: np.ndarray, batch: bool = True) -> tuple[np.ndarray, 
         np.stack([z, z, As**-1, z], axis=0),
         np.stack([z, As**-1, As - As**-3, z], axis=0),
         np.stack([z, z, z, As], axis=0),
-    ], axis=0).reshape(2, 2, 2, 2, -1)
+    ], axis=0).reshape(2, 2, 2, 2, -1).astype(M.dtype)
 
     Rpos = np.stack([
         np.stack([As**-1, z, z, z], axis=0),
         np.stack([z, As**-1-As**3, As, z], axis=0),
         np.stack([z, As, z, z], axis=0),
         np.stack([z, z, z, As**-1], axis=0),
-    ], axis=0).reshape(2, 2, 2, 2, -1)
+    ], axis=0).reshape(2, 2, 2, 2, -1).astype(M.dtype)
 
     if not batch:
         As = As[..., 0]
@@ -75,23 +75,23 @@ def construct_network(qs: float | complex | np.ndarray, link: MorseLink) -> tupl
             nidx += 2
             strands.insert(event.idx, inds[0])
             strands.insert(event.idx + 1, inds[1])
-            data = M.copy()
+            data = M
             if factor is not None:
-                data *= (factor[None, None, :] if batch else factor)
+                data = data * (factor[None, None, :] if batch else factor)
                 factor = None
             tensors.append(qtn.Tensor(data=data, inds=tuple(inds), tags=["Cup"]))
         elif isinstance(event, MorseCap):
             inds = [strands[event.idx], strands[event.idx + 1]] + (["batch"] if batch else [])
             del strands[event.idx + 1]
             del strands[event.idx]
-            tensors.append(qtn.Tensor(data=M.copy(), inds=tuple(inds), tags=["Cap"]))
+            tensors.append(qtn.Tensor(data=M, inds=tuple(inds), tags=["Cap"]))
         else:
             assert isinstance(event, MorseX)
             inds = [strands[event.idx], strands[event.idx + 1], f"i{nidx}", f"i{nidx+1}"] + (["batch"] if batch else [])
             nidx += 2
             strands[event.idx] = inds[2]
             strands[event.idx + 1] = inds[3]
-            tensors.append(qtn.Tensor(data=Rpos.copy() if event.over else Rneg.copy(), inds=tuple(inds), tags=["X"]))
+            tensors.append(qtn.Tensor(data=Rpos if event.over else Rneg, inds=tuple(inds), tags=["X"]))
 
     net = qtn.TensorNetwork(tensors)
     return net, 'batch' if batch else None

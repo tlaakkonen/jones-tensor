@@ -213,7 +213,7 @@ class MorseLink:
         return MorseLink(events)
 
 
-    def draw(self):
+    def draw(self, unoriented=False):
         """Draw this MorseLink using discopy."""
         from discopy.ribbon import Diagram, Ty, Id, Cap, Cup, Braid
 
@@ -224,18 +224,22 @@ class MorseLink:
                 return Id(s[0].tensor(*s[1:]))
 
         class TyUp(Ty):
-            def __init__(self): super().__init__('↑')
+            def __init__(self, unoriented): 
+                self.unoriented = unoriented
+                super().__init__('↑' if not unoriented else '')
 
             @property
-            def r(self): return TyDown()
+            def r(self): return TyDown(self.unoriented)
             
         class TyDown(Ty):
-            def __init__(self): super().__init__('↓')
+            def __init__(self, unoriented): 
+                self.unoriented = unoriented
+                super().__init__('↓' if not unoriented else '')
             
             @property
-            def r(self): return TyUp()
+            def r(self): return TyUp(self.unoriented)
 
-        t_up, t_down = TyUp(), TyDown()
+        t_up, t_down = TyUp(unoriented), TyDown(unoriented)
         diag = Diagram(inside=(), dom=Ty(), cod=Ty())
         strands = []
         for event in self.events:
